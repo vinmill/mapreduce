@@ -1,0 +1,28 @@
+** First store the text data in the keyval database
+1. start main server and start keyval server
+2. main takes the input file (book) and writes to the key value store raw_data table
+3. send data from key value store to main
+4. start mapper and reducer workers
+5. split data in main across mapper workers and process
+6. send processed data to keyval server 
+8. send done to main
+7. reducer should poll the main for completed mapper processes
+8. Once all mapper processes complete, start reduces from main and send intermediate data across reduces.
+9. the reducer should retrieve all mapped data from keyval store intermediate_data
+10. Compute reduce, send status to main, and output data to keyval output_data table
+
+*** if process fails on one of the mappers or reducers restart the process (MAY NEED TO STORE THE PARTITIONS IN DATABASE TO RETRIEVE)
+Main:
+1. Implement config file interface that contains
+    Input file location
+    Number of mappers and reducers
+    Map and Reduce function : Serialized implementations or file-names (such as map_wc.py).
+    IP addresses and port-numbers (either as a config file or explicit list).
+2. Gets a path to the input dataset as an input, and it partitions the dataset based on the number of map tasks
+3. API for polling and status
+4. You must be very careful about shared-resources assumptions, especially storage. You cannot assume all workers have access to the same underlying file-system. You can assume that only the master has access to the complete input data to "load" it into the shared KV store. 
+
+Mapper:
+1. map function for 
+
+Reducer:
