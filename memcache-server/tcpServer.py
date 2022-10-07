@@ -1,6 +1,6 @@
 from socket import *
+import json
 import pickle
-from bson.binary import Binary
 import os, time
 import sqlite3
 import os.path
@@ -75,7 +75,7 @@ class KeyValueStore(object):
 
     def set(self, key, value, table = 'raw_data'):
         """Set key:value pair"""
-        serialized_value = Binary(pickle.dumps(value))
+        serialized_value = pickle.dumps(value)
         conn = self.connection()
         cursor = conn.cursor()
         cursor.execute(
@@ -126,17 +126,28 @@ class KeyValueStore(object):
 
                 if not dat:
                     break
-                key_value = dat.decode()
-                key_value = key_value.split('=')
-                if self.get(key_value[0]) == None:
-                    self.set(key_value[0], key_value[1])
-                    keystoremsg = 'STORED\r\n'
+                key_value = dat.decode('utf-8')
+                key_value = json.loads(key_value)
+                if 'key' and 'value' and 'table' in key_value:
+                    self.set(key_value['key'], key_value['value'], key_value['table'])
+                    keystoremsg = 'STORED in' + key_value['table'] + '\r\n'
+                    connection.send(keystoremsg.encode())
+                elif 'key' and 'value' in key_value:
+                    self.set(key_value['key'], key_value['value'])
+                    keystoremsg = 'STORED in raw_data \r\n'
+                    connection.send(keystoremsg.encode())
+                elif 'key' and 'table' in key_value & self.get(key_value['key'], key_value['table']) == None:
+                    keystoremsg = 'NOT-STORED in' + key_value['table'] + '\r\n'
+                    connection.send(keystoremsg.encode())
+                elif 'key' in key_value & self.get(key_value['key']) == None:
+                    keystoremsg = 'NOT-STORED in raw_data \r\n'
                     connection.send(keystoremsg.encode())
                 else:
                     keystoremsg = 'NOT-STORED\r\n'
                     connection.send(keystoremsg.encode())
-                getvalue = self.get(key_value[0])
-                bytes_obj = bytes(getvalue , "UTF-8")
+                if 'key' in key_value:
+                    getvalue = self.get(key_value[0])
+                    bytes_obj = bytes(getvalue , "UTF-8")
                 print('VALUE {} {} {} bytes\r\n'.format(getvalue, key_value[0], len(bytes_obj)))
                 print('{} \r\n'.format(bytes_obj))
         finally:
