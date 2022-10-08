@@ -1,4 +1,5 @@
 APP:
+  DATASIZE: 1024
   INPUT: sherlock.txt
   # Input file location
   MAPPERS: 5
@@ -13,6 +14,7 @@ APP:
   PORT: 27710
 
 KEYVALSTORE:
+  DATASIZE: 1024
   HOST: localhost
   PORT: 27700
   DB: ../kv_database.db

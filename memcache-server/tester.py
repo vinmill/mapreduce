@@ -1,10 +1,12 @@
 import requests
 import yaml
 import json
-todo = """{"key": "pdam=sas", "value": "omg"}"""
-key_value = json.loads(todo)
-if 'key' and 'value' in key_value:
-    print('yay')
+import os
+print(os.listdir('../raw-data'))
+# todo = """{"key": "pdam=sas", "value": "omg"}"""
+# key_value = json.loads(todo)
+# if 'key' and 'value' in key_value:
+#     print('yay')
 
 # with open('../configuration.yaml', "r") as f:
 #     config = yaml.safe_load(f)
