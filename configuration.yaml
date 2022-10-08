@@ -1,0 +1,27 @@
+APP:
+  INPUT: sherlock.txt
+  # Input file location
+  MAPPERS: 5
+  # Number of mapper nodes
+  REDUCERS: 5
+  # Number of reducer nodes
+  FUNCTION: word-count
+  # Mapreduce function to use. Either word-count or inverted-index
+  DEBUG: True
+  # Only accept True or False
+  HOST: localhost
+  PORT: 27710
+
+KEYVALSTORE:
+  HOST: localhost
+  PORT: 27700
+  DB: ../kv_database.db
+
+MACHINES:
+  - localhost
+  - localhost
+  - localhost
+  - localhost
+  - localhost
+
+ 

@@ -1,6 +1,9 @@
 PyYAML==6.0
+bson==0.5.9
 urllib3==1.26.7
-pymongo==4.2.0
 fastapi
 uvicorn
 flask-restful
+python
+requests
+nltk

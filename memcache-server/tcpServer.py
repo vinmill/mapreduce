@@ -119,7 +119,7 @@ class KeyValueStore(object):
     def now(self):
         return time.ctime(time.time())
     
-    def threaded(self, connection, addr):
+    def threaded(self, connection):
         try:
             while True:
                 dat = connection.recv(self.data_size)
@@ -152,6 +152,21 @@ class KeyValueStore(object):
                 print('{} \r\n'.format(bytes_obj))
         finally:
             connection.close()
+
+        try:
+            if len(sys.argv) > 1:
+                target_host = sys.argv[1]
+
+            tcp_socket = socket(AF_INET, SOCK_STREAM)
+            tcp_socket.connect((target_host, target_port))
+            # Receive and print data, as long as the client is sending something
+            for key, value in kwargs.items():
+                keymod = key + "=" + value
+                tcp_socket.send(keymod.encode())
+                data = tcp_socket.recv(data_size)
+                print('Recieved: {}'.format(data))
+        finally:
+            tcp_socket.close()
     
         # connection closed
         connection.close()
@@ -165,4 +180,4 @@ class KeyValueStore(object):
         while True:
             connection, addr = tcp_socket.accept()
             print('SERVER: Connected to: ' + addr[0] + ':' + str(addr[1]))
-            self.threaded(connection, addr)
+            self.threaded(connection)
