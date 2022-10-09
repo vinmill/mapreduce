@@ -19,11 +19,15 @@ KEYVALSTORE:
   PORT: 27700
   DB: ../kv_database.db
 
+WORKERS:
+  RAWDATA: '/Users/main/Documents/repos/Cloud-Computing-Assignment2/_data/raw-data/'
+  INTERIMDATA: '/Users/main/Documents/repos/Cloud-Computing-Assignment2/_data/intermediate_data/'
+  OUTPUTDATA: '/Users/main/Documents/repos/Cloud-Computing-Assignment2/_data/output_data/'
+
 MACHINES:
-  - localhost
-  - localhost
-  - localhost
-  - localhost
-  - localhost
+  - [localhost, 27720]
+  - [localhost, 27730]
+  - [localhost, 27740]
+  - [localhost, 27750]
 
  

@@ -3,9 +3,12 @@ import os
 import ast
 from threading import Thread
 import nltk
+import yaml
 from nltk.tokenize import word_tokenize
-import random
 nltk.download('punkt')
+
+with open('../configuration.yaml', "r") as f:
+    config = yaml.safe_load(f)
 
 class InputData:
     def read(self):
@@ -25,11 +28,11 @@ class TextInputData(InputData):
 
     @classmethod
     def generate_inputs(cls, config):
-        data_dir = config["raw_dir"]
+        data_dir = config['WORKERS']['RAWDATA']
         for name in os.listdir(data_dir):
             yield cls(os.path.join(data_dir, name))
 
-class JsonInputData(InputData):
+class DictionaryInputData(InputData):
     def __init__(self, path):
         super().__init__()
         self.path = path
@@ -41,7 +44,7 @@ class JsonInputData(InputData):
 
     @classmethod
     def generate_inputs(cls, config):
-        data_dir = config["intermediate_dir"]
+        data_dir = config['WORKERS']['INTERIMDATA']
         for name in os.listdir(data_dir):
             yield cls(os.path.join(data_dir, name))
 
@@ -148,9 +151,7 @@ def reducerfunction(reduce_worker_class, input_class, config):
     reduceworkers = reduce_worker_class.create_workers(input_class, config)
     return executereducer(reduceworkers)
 
-config = {"data_dir": '/Users/main/Documents/repos/Cloud-Computing-Assignment2/raw-data/',
-        "intermediate_dir": '/Users/main/Documents/repos/Cloud-Computing-Assignment2/intermediate_data/'}
-intermediate = mapperfunction(WordCountWorker, TextInputData, config)
-outputs = reducerfunction(WordCountWorker, JsonInputData, config)
+# intermediate = mapperfunction(WordCountWorker, TextInputData, config)
+# outputs = reducerfunction(WordCountWorker, DictionaryInputData, config)
 
-print(outputs)
+# print(outputs)
