@@ -147,7 +147,7 @@ class KeyValueStore(object):
                     connection.send(keystoremsg.encode())
                 if 'key' in key_value:
                     getvalue = self.get(key_value[0])
-                    bytes_obj = bytes(getvalue , "UTF-8")
+                    bytes_obj = bytes(getvalue, "UTF-8")
                 print('VALUE {} {} {} bytes\r\n'.format(getvalue, key_value[0], len(bytes_obj)))
                 print('{} \r\n'.format(bytes_obj))
         finally:
