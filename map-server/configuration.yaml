@@ -1,15 +1,10 @@
 APP:
   DATASIZE: 1024
-  INPUT: sherlock.txt
-  # Input file location
+  INPUT: '../_data/testfiles/sherlock.txt'
   MAPPERS: 5
-  # Number of mapper nodes
   REDUCERS: 5
-  # Number of reducer nodes
   FUNCTION: word-count
-  # Mapreduce function to use. Either word-count or inverted-index
   DEBUG: True
-  # Only accept True or False
   HOST: localhost
   PORT: 27710
 
