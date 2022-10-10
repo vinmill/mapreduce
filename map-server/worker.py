@@ -7,7 +7,7 @@ import yaml
 from nltk.tokenize import word_tokenize
 nltk.download('punkt')
 
-with open('../configuration.yaml', "r") as f:
+with open('/Users/main/Documents/repos/Cloud-Computing-Assignment2/map-server/configuration.yaml', "r") as f:
     config = yaml.safe_load(f)
 
 class InputData:

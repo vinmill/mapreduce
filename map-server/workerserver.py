@@ -4,22 +4,27 @@ from worker import *
 import yaml
 import json
 
-with open('../configuration.yaml', "r") as f:
+with open('/Users/main/Documents/repos/Cloud-Computing-Assignment2/map-server/configuration.yaml', "r") as f:
     config = yaml.safe_load(f)
 
 # worker will recieve data from main and input that data to worker function and send the result to main
 def recdat(connection, file):
-    with open(file + 'tmp.txt', "wb") as f:
-        while True:
-            # read 1024 bytes from the socket (receive)
+    while True:
+        # read 1024 bytes from the socket (receive)
+        with open(file + 'tmp.txt', "wb") as f:
             bytes_read = connection.recv(4096)
-            if not bytes_read:    
-                # nothing is received
-                # file transmitting is done
-                break
-            # write to the file the bytes we just received
             f.write(bytes_read)
-    connection.close()
+        if not bytes_read:
+            continue
+        intermediate = mapperfunction(WordCountWorker, TextInputData, config)
+        print(intermediate)
+        connection.send(b'mapped')
+        bytes_read = connection.recv(4096)
+        if bytes_read.decode() == 'ready':
+            connection.sendall(json.dumps(intermediate, indent=2).encode('utf-8'))
+        if connection.recv(4096) == None:
+            connection.close()
+            break
 
 def senddat(connection, file):
     with open(file + 'tmp.txt', "r") as f:
@@ -35,22 +40,17 @@ def senddat(connection, file):
             # busy networks
             
     # close the client socket
-    connection.close()
     # close the server socket
 
 def start_server(target_host, target_port, bind_host, bind_port, file):
     # Set up a TCP/IP server
-    server_socket = socket(AF_INET, SOCK_STREAM)
-    
-    try:
-        server_socket.bind((bind_host, bind_port))
-        server_socket.connect((target_host, target_port))
-        server_socket.listen(5)
-    except:
-        print('Bind failed. Error.')
-    recdat(server_socket, file)
-    senddat(server_socket, file)
 
+    server_socket = socket(AF_INET, SOCK_STREAM)
+    server_socket.connect((target_host, target_port))
+    recdat(server_socket, file)
+    while True:
+        # server_socket.connect((target_host, target_port))
+        senddat(server_socket, file)
 
 start_server(
     config['APP']['HOST'], 
