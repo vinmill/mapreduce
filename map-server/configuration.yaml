@@ -1,6 +1,6 @@
 APP:
   DATASIZE: 1024
-  INPUT: '../_data/testfiles/sherlock.txt'
+  INPUT: '../_data/testfiles/sherlocktest.txt'
   MAPPERS: 5
   REDUCERS: 5
   FUNCTION: word-count
@@ -19,10 +19,13 @@ WORKERS:
   INTERIMDATA: '/Users/main/Documents/repos/Cloud-Computing-Assignment2/_data/intermediate_data/'
   OUTPUTDATA: '/Users/main/Documents/repos/Cloud-Computing-Assignment2/_data/output_data/'
 
-MACHINES:
+MAPPERS:
   - [localhost, 27720]
-  - [localhost, 27730]
-  - [localhost, 27740]
-  - [localhost, 27750]
+
+REDUCERS:
+  - [localhost, 27820]
+  - [localhost, 27830]
+  - [localhost, 27840]
+  - [localhost, 27850]
 
  

@@ -1,6 +1,7 @@
 from socket import *
 import json
 import pickle
+import sys
 import os, time
 import sqlite3
 import os.path
@@ -35,16 +36,16 @@ class KeyValueStore(object):
         conn = sqlite3.Connection(self.filename)
         cursor = conn.cursor()
         sql_create_raw = """CREATE TABLE IF NOT EXISTS raw_data (
-        key BLOB PRIMARY KEY NOT NULL,
-        value blob);"""
+        key varchar PRIMARY KEY NOT NULL,
+        value varchar);"""
 
         sql_create_intermediate = """CREATE TABLE IF NOT EXISTS intermediate_data (
-        key BLOB PRIMARY KEY NOT NULL,
-        value blob);"""
+        key varchar PRIMARY KEY NOT NULL,
+        value varchar);"""
 
         sql_create_output = """CREATE TABLE IF NOT EXISTS output_data (
-        key BLOB PRIMARY KEY NOT NULL,
-        value blob);"""
+        key varchar PRIMARY KEY NOT NULL,
+        value varchar);"""
         cursor.execute(sql_create_raw)
         cursor.execute(sql_create_intermediate)
         cursor.execute(sql_create_output)
@@ -61,7 +62,7 @@ class KeyValueStore(object):
 
     def set(self, key, value, table = 'raw_data'):
         """Set key:value pair"""
-        serialized_value = pickle.dumps(value)
+        serialized_value = str(value)
         conn = self.connection()
         cursor = conn.cursor()
         cursor.execute(
@@ -116,6 +117,7 @@ class KeyValueStore(object):
 
         try:
             dat = connection.recv(self.data_size)
+
             key_value = json.loads(dat)
 
             if key_value['type'] == 'GET':
@@ -137,6 +139,7 @@ class KeyValueStore(object):
     def start_server(self, bind_ip, bind_port, connections):
         # Set up a TCP/IP server
         tcp_socket = socket(AF_INET, SOCK_STREAM)
+        tcp_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         tcp_socket.bind((bind_ip, bind_port))
         tcp_socket.listen(connections)
         

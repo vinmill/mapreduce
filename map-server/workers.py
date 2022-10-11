@@ -1,3 +1,4 @@
+from array import array
 from distutils.command.config import config
 import os
 import ast
@@ -6,9 +7,6 @@ import nltk
 import yaml
 from nltk.tokenize import word_tokenize
 nltk.download('punkt')
-
-with open('/Users/main/Documents/repos/Cloud-Computing-Assignment2/map-server/configuration.yaml', "r") as f:
-    config = yaml.safe_load(f)
 
 class InputData:
     def read(self):
@@ -48,36 +46,41 @@ class DictionaryInputData(InputData):
         for name in os.listdir(data_dir):
             yield cls(os.path.join(data_dir, name))
 
-class Worker:
-    def __init__(self, inputs):
-        self.inputs = inputs
-        self.outputs = None
+# class Worker:
+#     def __init__(self, inputs):
+#         self.inputs = inputs
+#         self.outputs = None
 
-    def mapper(self):
-        raise NotImplementedError
+#     def mapper(self):
+#         raise NotImplementedError
 
-    def reducer(self):
-        raise NotImplementedError
+#     def reducer(self):
+#         raise NotImplementedError
 
-    @classmethod
-    def create_workers(cls, input_class, config):
-        workers = []
-        for inputs in input_class.generate_inputs(config):
-            workers.append(cls(inputs))
-        return workers
+#     @classmethod
+#     def create_workers(cls, input_class, config):
+#         workers = []
+#         for inputs in input_class.generate_inputs(config):
+#             workers.append(cls(inputs))
+#         return workers
 
-class InvertedIndexWorker(Worker):
-    def mapper(self):
+class InvertedIndexWorker:
+    def __init__(self):
+        self.inputs = None
         self.outputs = {}
-        data = self.inputs.read()
-        array = data.splitlines()
+        
+    def mapper(self, data):
+        arr = data
         punc = '''!()-[]{};:'"\, <>./?@#$%^&*_~'''
-        for ele in data:  
-            if ele in punc:  
-                data = data.replace(ele, " ") 
+        for ele in range(len(arr)):
+            arr[ele] = arr[ele].strip("""\n""")
+            arr[ele] = arr[ele].strip("""\ufeff""")
+            for i in ele:
+                if i in punc:  
+                    ele = ele.replace(i, " ") 
         data=data.lower()
-        for i in range(len(array)):
-            check = array[i].lower()
+        for i in range(len(arr)):
+            check = arr[i].lower()
             text_tokens = word_tokenize(check)
             for item in text_tokens:
                 if item in check:
@@ -88,24 +91,30 @@ class InvertedIndexWorker(Worker):
                         self.outputs[item].append(i+1)
         return self.outputs
 
-    def reducer(self):
-        output = self.inputs.read()
+    def reducer(self, data):
+        output = data
         self.outputs = { key: output.get(key,[]) for key in set(list(output.keys())) }
         return self.outputs
 
 
-class WordCountWorker(Worker):
-    def mapper(self):
+class WordCountWorker(object):
+    def __init__(self):
+        self.inputs = None
         self.outputs = {}
-        data = self.inputs.read()
-        array = data.splitlines()
+
+    def mapper(self, data):
+        arr = data
+        if isinstance(arr, str):
+            arr = arr.strip('][').split(', ')
         punc = '''!()-[]{};:'"\, <>./?@#$%^&*_~'''
-        for ele in data:  
-            if ele in punc:  
-                data = data.replace(ele, " ") 
-        data=data.lower()
-        for i in range(len(array)):
-            check = array[i].lower()
+        for ele in range(len(arr)):
+            arr[ele] = arr[ele].strip("""\n""")
+            arr[ele] = arr[ele].strip("""\ufeff""")
+            for i in ele:
+                if i in punc:  
+                    ele = ele.replace(i, " ") 
+        for i in range(len(arr)):
+            check = arr[i].lower()
             text_tokens = word_tokenize(check)
             for item in text_tokens:
                 if item in check:
@@ -115,43 +124,37 @@ class WordCountWorker(Worker):
                         self.outputs[item].append(1)
         return self.outputs
 
-    def reducer(self):
-        output = self.inputs.read()
+    def reducer(self, data):
+        output = data
         self.outputs = { key: sum(value) for key, value in output.items() }
         return self.outputs
 
 
-class LineCountWorker(Worker):
-    def mapper(self):
-        data = self.inputs.read()
+class LineCountWorker(object):
+    def __init__(self, data):
+        self.outputs = {}
+        self.data = data
+        
+    def mapper(self, data):
         self.outputs = data.count("\n")
+        
     def reducer(self, other):
         self.outputs += other.outputs
 
-def executemapper(workers):
-    threads = [Thread(target=w.mapper) for w in workers]
-    for thread in threads: thread.start()
-    for thread in threads: thread.join()
-    first, *rest = workers
-    return first.outputs
 
-def executereducer(workers):
-    threads = [Thread(target=w.reducer) for w in workers]
-    for thread in threads: thread.start()
-    for thread in threads: thread.join()
-    first, *rest = workers
-    return first.outputs
+def executemapper(worker, data):
+    x = worker()
+    x = x.mapper(data)
+    return x
 
+def executereducer(worker, data):
+    x = worker()
+    x = x.reducer(data)
+    return x
 
-def mapperfunction(map_worker_class, input_class, config):
-    mapworkers = map_worker_class.create_workers(input_class, config)
-    return executemapper(mapworkers)
+def mapperfunction(map_worker_class, data):
+    return executemapper(map_worker_class, data)
 
-def reducerfunction(reduce_worker_class, input_class, config):
-    reduceworkers = reduce_worker_class.create_workers(input_class, config)
-    return executereducer(reduceworkers)
+def reducerfunction(reduce_worker_class, data):
+    return executereducer(reduce_worker_class, data)
 
-# intermediate = mapperfunction(WordCountWorker, TextInputData, config)
-# outputs = reducerfunction(WordCountWorker, DictionaryInputData, config)
-
-# print(outputs)
